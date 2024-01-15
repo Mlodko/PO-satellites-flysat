@@ -8,7 +8,7 @@ public class Satellite {
     float satellite_position;
     int norad;
     float declination;
-    String standard; // Standard kurwa czego???
+    String standard; // Standard czego???
     String operator;
     int lifespan; // In years
     Date date_of_arrival;
