@@ -1,6 +1,8 @@
+package ParentClasses;
+
 import java.util.Date;
 
-public abstract class Satellite {
+public class Satellite {
     String[] names;
     float orbital_position;
     float satellite_position;
