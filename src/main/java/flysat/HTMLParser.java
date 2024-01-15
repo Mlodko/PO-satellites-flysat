@@ -1,14 +1,15 @@
 package flysat;
-import org.jsoup.nodes.Document;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Optional;
+import org.jetbrains.annotations.Nullable;
+import org.jsoup.nodes.Document;
 import org.jsoup.Jsoup;
 import ParentClasses.Satellite;
 
 public class HTMLParser {
-    public static Optional<ArrayList<String>> GetSatelliteURLs() {
+    private static Optional<ArrayList<String>> getSatelliteURLs() {
         Document document;
 
         // Try to connect, if can't return empty optional to be handled later
@@ -25,20 +26,30 @@ public class HTMLParser {
 
         return Optional.of(satelliteURLs);
     }
-
-    // We can't rely on other teams to use optionals so if we can't connect we return a null (;-;)
-    public static Satellite parseSatelliteData(String url) {
-        Satellite satellite = new Satellite();
+    
+    private static Optional<Satellite> parseSatelliteData(String url) {
         Document document;
         try {
             document = Jsoup.connect(url).get();
         } catch (IOException e) {
             System.err.println("Couldn't pull data from " + url);
-            return null;
+            return Optional.empty();
         }
+        Satellite satellite = new Satellite();
 
         // TODO parse HTML document
 
-        return satellite;
+        return Optional.of(satellite);
+    }
+
+    public static Satellite[] @Nullable getSatellites() {
+        Optional<ArrayList<String>> urls = getSatelliteURLs();
+
+        return urls.map(urlList -> urlList.stream()             // If urls is not empty, create a stream from the list of URLs
+                        .map(HTMLParser::parseSatelliteData)    // Apply parseSatelliteData() to each URL in the stream
+                        .filter(Optional::isPresent)            // Remove any Optionals that are empty
+                        .map(Optional::get)                     // Transform each Optional<Satellite> in the stream into a Satellite
+                        .toArray(Satellite[]::new))             // Collect the Satellite objects in the stream into a new array
+                        .orElse(null);                          // If urls was empty, return null
     }
 }
