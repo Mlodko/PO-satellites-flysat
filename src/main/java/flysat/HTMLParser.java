@@ -11,15 +11,16 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 public class HTMLParser {
+    final static String SATELLITE_LIST_URL = "https://www.flysat.com/en/satellitelist";
     private static Optional<ArrayList<String>> getSatelliteURLs() {
         Document document;
 
         // Try to connect, if can't - return empty optional to be handled later
         // Why not null? Simple - I hate nulls, Optionals *force* you to properly handle the possibility of lack of data.
         try {
-            document = Jsoup.connect("https://www.flysat.com/en/satellitelist").get();
+            document = Jsoup.connect(SATELLITE_LIST_URL).get();
         } catch (IOException e) {
-            System.err.println("Couldn't pull data from https://www.flysat.com/en/satellitelist");
+            System.err.println("Couldn't pull data from " + SATELLITE_LIST_URL);
             return Optional.empty();
         }
         ArrayList<String> satelliteURLs = new ArrayList<>();
@@ -66,6 +67,9 @@ public class HTMLParser {
         if(header.isEmpty()) return Optional.empty();
 
         String headerString = header.get().text();
+        //     ^^^^^^^^^^^^
+        //     Like "name @ position ° W/E"
+
         String[] nameAndPosition = headerString.split("@");
 
         // Satellite name parsing
@@ -76,6 +80,9 @@ public class HTMLParser {
 
         // Orbital position parsing
             String[] splitPositionString = nameAndPosition[1].strip().split("°");
+            //                             ^^^^^^^^^^^^^^^^^^
+            //                             Like "106.5 ° E"
+
             // Convention
             // * West is (-)
             // * East is (+)
