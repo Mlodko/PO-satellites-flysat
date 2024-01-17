@@ -3,17 +3,17 @@ package ParentClasses;
 import java.util.Date;
 
 public class Satellite {
-    String[] names;
-    float orbital_position;
-    float satellite_position;
-    int norad;
-    float declination;
-    String standard; // Standard kurwa czego???
-    String operator;
-    int lifespan; // In years
-    Date date_of_arrival;
-    String launch_site;
-    String model_name;
-    String producer;
-    Transponder[] transponders;
+    public String[] names;
+    public float orbital_position;
+    public float satellite_position;
+    public int norad;
+    public float declination;
+    public String standard; // Standard czego???
+    public String operator;
+    public int lifespan; // In years
+    public Date date_of_arrival;
+    public String launch_site;
+    public String model_name;
+    public String producer;
+    public Transponder[] transponders;
 }
