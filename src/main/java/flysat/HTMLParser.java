@@ -30,7 +30,28 @@ public class HTMLParser {
             (for example https://www.flysat.com/en/satellite/nss-9)
             After pulling just put the urls in satelliteURLs ArrayList
          */
+
+        /* link parsing */
+        Set<String> linkSet = new HashSet<>();
         return Optional.of(satelliteURLs);
+
+        int count = 0;
+
+		for (org.jsoup.nodes.Element link: document.select("center table tbody tr td table tbody tr td:nth-of-type(2) a")) {
+			String linkString = link.attr("href");
+			if (linkString.equals("https://flysat.com/public/en/satellite/eutelsat-33e-moving-west")) {
+				break;
+			}
+			linkSet.add(linkString);
+			
+//			System.out.println(linkString);
+			count++;
+		}
+		
+		System.out.println(count);
+		
+		satelliteURLs.addAll(linkSet);
+		return Optional.of(satelliteURLs);
     }
     
     private static Optional<Satellite> parseSatelliteData(String url) {
