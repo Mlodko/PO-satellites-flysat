@@ -73,10 +73,7 @@ public class HTMLParser {
         String[] nameAndPosition = headerString.split("@");
 
         // Satellite name parsing
-            // TODO For now I use the whole thing as a single name, have to figure out how to split it
-            ArrayList<String> names = new ArrayList<>();
-            names.add(nameAndPosition[0].strip());
-            satellite.names = names.toArray(String[]::new);
+            satellite.names = extractNames(nameAndPosition[0].strip());
 
         // Orbital position parsing
             String[] splitPositionString = nameAndPosition[1].strip().split("°");
@@ -92,6 +89,25 @@ public class HTMLParser {
             }
 
         return Optional.of(satellite);
+    }
+
+
+    // Separate names from formats: "name1", "name1 (name2)", "name1 / name2" into an array
+    private static String[] extractNames(String unformattedName) {
+        String[] names;
+
+        if (unformattedName.contains("(")) {
+            // Format: "name1 (name2)"
+            names = unformattedName.split("\\s*\\(\\s*|\\s*\\)\\s*");
+        } else if (unformattedName.contains("/")) {
+            // Format: "name1/name2"
+            names = unformattedName.split("\\s*/\\s*");
+        } else {
+            // Format: Only one name
+            names = new String[]{unformattedName};
+        }
+
+        return names;
     }
 
     public static @Nullable Satellite[] getSatellites() {
