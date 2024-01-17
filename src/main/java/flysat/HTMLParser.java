@@ -32,7 +32,7 @@ public class HTMLParser {
          */
 
         /* link parsing */
-        Set<String> linkSet = new HashSet<>();
+        Set<String> linkSet = new LinkedHashSet<>();
         return Optional.of(satelliteURLs);
 
         int count = 0;
@@ -49,7 +49,8 @@ public class HTMLParser {
 		}
 		
 		System.out.println(count);
-		
+
+	    	linkSet.remove("http://www.alpsat.com/");
 		satelliteURLs.addAll(linkSet);
 		return Optional.of(satelliteURLs);
     }
