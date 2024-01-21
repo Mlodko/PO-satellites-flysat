@@ -1,8 +1,12 @@
 package flysat;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
+
 import org.jetbrains.annotations.Nullable;
 import org.jsoup.nodes.Document;
 import org.jsoup.Jsoup;
@@ -12,6 +16,23 @@ import org.jsoup.select.Elements;
 
 public class HTMLParser {
     final static String SATELLITE_LIST_URL = "https://www.flysat.com/en/satellitelist";
+    final static int THREAD_POOL_SIZE = 128;
+
+    // We have to introduce concurrency, each parseSatelliteData() call takes about a second,
+    // 0.6 s of which is taken by `document = Jsoup.connect(url).get();`
+    private static List<CompletableFuture<Optional<Satellite>>> parseSatellitesAsync(ArrayList<String> urls) {
+        ExecutorService executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
+        List<CompletableFuture<Optional<Satellite>>> futures = urls.stream()
+                        .map(url -> CompletableFuture.supplyAsync(() -> parseSatelliteData(url), executor))
+                        .toList();
+
+        CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+        allOf.join();
+        executor.shutdown();
+        return futures;
+    }
+
+
     private static Optional<ArrayList<String>> getSatelliteURLs() {
         Document document;
 
@@ -23,9 +44,8 @@ public class HTMLParser {
             System.err.println("Couldn't pull data from " + SATELLITE_LIST_URL);
             return Optional.empty();
         }
-        ArrayList<String> satelliteURLs = new ArrayList<>();
 
-        /* TODO
+        /* DONE
             Parse HTML document to a list of URLs of specific satellites
             (for example https://www.flysat.com/en/satellite/nss-9)
             After pulling just put the urls in satelliteURLs ArrayList
@@ -33,7 +53,6 @@ public class HTMLParser {
 
         /* link parsing */
         Set<String> linkSet = new LinkedHashSet<>();
-        return Optional.of(satelliteURLs);
 
         int count = 0;
 
@@ -51,7 +70,7 @@ public class HTMLParser {
 		System.out.println(count);
 
 	    	linkSet.remove("http://www.alpsat.com/");
-		satelliteURLs.addAll(linkSet);
+        ArrayList<String> satelliteURLs = new ArrayList<>(linkSet);
 		return Optional.of(satelliteURLs);
     }
     
@@ -82,13 +101,9 @@ public class HTMLParser {
          */
 
         Elements nameHeader =  document.select("body > table:nth-of-type(2) > tbody > tr > td");
-        System.out.println(nameHeader);
-        Optional<Element> header = Optional.ofNullable(nameHeader.select("b").first());
-        System.out.println(header);
+        Element header = nameHeader.select("b").first();
 
-        if(header.isEmpty()) return Optional.empty();
-
-        String headerString = header.get().text();
+        String headerString = header.text();
         //     ^^^^^^^^^^^^
         //     Like "name @ position ° W/E"
 
@@ -109,7 +124,7 @@ public class HTMLParser {
             if(splitPositionString[1].strip().equals("W")) {
                 satellite.orbital_position *= -1;
             }
-
+        System.out.println("Done processing satellite from " + url);
         return Optional.of(satellite);
     }
 
@@ -134,17 +149,18 @@ public class HTMLParser {
 
     public static @Nullable Satellite[] getSatellites() {
         Optional<ArrayList<String>> urls = getSatelliteURLs();
-
-        return urls.map(urlList -> urlList.stream()             // If urls is not empty, create a stream from the list of URLs
-                        .map(HTMLParser::parseSatelliteData)    // Apply parseSatelliteData() to each URL in the stream
-                        .filter(Optional::isPresent)            // Remove any Optionals that are empty
-                        .map(Optional::get)                     // Transform each Optional<Satellite> in the stream into a Satellite
-                        .toArray(Satellite[]::new))             // Collect the Satellite objects in the stream into a new array
-                        .orElse(null);                          // If urls was empty, return null
+        if (urls.isEmpty())
+            return new Satellite[0];
+        System.out.println("Satellites to process: " + urls.get().size());
+        List<CompletableFuture<Optional<Satellite>>> futures =  parseSatellitesAsync(urls.get());
+        Satellite[] satellites = futures.stream().map(CompletableFuture::join)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .toArray(Satellite[]::new);
+        return satellites;
     }
 
     public static void main(String[] args) {
-        // TODO This method is just for debugging. After we're done we should delete it.
-        parseSatelliteData("https://flysat.com/public/en/satellite/intelsat-32e-sky-brasil-1");
+        getSatellites();
     }
 }

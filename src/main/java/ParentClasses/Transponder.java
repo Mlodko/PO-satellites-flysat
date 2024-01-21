@@ -1,8 +1,6 @@
 package ParentClasses;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.stream.Stream;
 
 public class Transponder {
 
@@ -10,7 +8,7 @@ public class Transponder {
     public Transponder() {
         names = new String[] {};
         frequency = 0f;
-        polarization = POLARIZATION.NULL;
+        polarization = Polarization.NULL;
         standard = "";
         encoding = "";
         sr = 0;
@@ -19,7 +17,7 @@ public class Transponder {
 
     public String[] names; // (Like "2C")
     public float frequency;
-    public POLARIZATION polarization;
+    public Polarization polarization;
     public String standard; // (Like "DVB-S2")
     public String encoding; // (Like "16APSK")
     public int sr;

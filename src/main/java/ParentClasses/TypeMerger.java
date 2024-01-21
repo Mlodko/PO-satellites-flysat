@@ -39,6 +39,7 @@ public abstract class TypeMerger {
     
     public static String[] merge(String[] one, String[] other) {
         if(one.length > other.length) {
+            // TODO merge arrays, don't return the longer one
             return one;
         }
         else if(other.length > one.length) {
@@ -69,7 +70,7 @@ public abstract class TypeMerger {
         }
     }
 
-    public static POLARIZATION merge(POLARIZATION one, POLARIZATION other) {
+    public static Polarization merge(Polarization one, Polarization other) {
         if(one == other) {
             int chosen = random.nextInt(2); // Either 0 or 1
             switch (chosen) {
@@ -81,7 +82,7 @@ public abstract class TypeMerger {
                 }
             }
         }
-        else if(other == POLARIZATION.NULL) {
+        else if(other == Polarization.NULL) {
             return one;
         }
         else {

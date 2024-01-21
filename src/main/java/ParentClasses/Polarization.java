@@ -1,6 +1,6 @@
 package ParentClasses;
 
-public enum POLARIZATION {
+public enum Polarization {
     NULL,
     H,
     V,
