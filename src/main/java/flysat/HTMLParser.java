@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ParentClasses.Transponder;
 import org.jetbrains.annotations.Nullable;
 import org.jsoup.nodes.Document;
 import org.jsoup.Jsoup;
@@ -76,6 +77,14 @@ public class HTMLParser {
 	    	linkSet.remove("http://www.alpsat.com/");
         ArrayList<String> satelliteURLs = new ArrayList<>(linkSet);
 		return Optional.of(satelliteURLs);
+    }
+
+    private static Optional<Transponder[]> getTranspondersOfSatellite(Document document) {
+        Elements coloredTrs = document.select("body > table > tbody > tr[bgcolor='#79bcff']");
+        ArrayList<Transponder> transponders = new ArrayList<>();
+        for (Element tr : coloredTrs) {
+            
+        }
     }
     
     private static Optional<Satellite> parseSatelliteData(String url) {
